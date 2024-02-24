@@ -20,8 +20,10 @@ public class CustomArrayImpl<T> implements CustomArray<T>, RandomAccess, Cloneab
     private Object[] array;
 
     public CustomArrayImpl(int size) {
-        if (size >= 0) {
+        if (size > 0) {
             this.array = new Object[size];
+        } else if (size == 0) {
+            this.array = EMPTY_ARRAY;
         } else {
             throw new IllegalArgumentException("start size of ArrayList should be greater or equals 0");
         }
@@ -35,6 +37,7 @@ public class CustomArrayImpl<T> implements CustomArray<T>, RandomAccess, Cloneab
         if (tCollection != null) {
             Object[] collectionArray = tCollection.toArray();
             if (collectionArray.length != 0) {
+                currentElementsCount = collectionArray.length;
                 array = collectionArray;
             } else {
                 array = EMPTY_ARRAY;
