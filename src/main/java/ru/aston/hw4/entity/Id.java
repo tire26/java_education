@@ -1,4 +1,4 @@
-package ru.aston.hw2.entity;
+package ru.aston.hw4.entity;
 
 public interface Id {
     Integer getId();

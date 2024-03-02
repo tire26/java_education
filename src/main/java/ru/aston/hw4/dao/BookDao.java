@@ -1,9 +1,11 @@
-package ru.aston.hw2.dao;
+package ru.aston.hw4.dao;
 
-import ru.aston.hw2.entity.Author;
-import ru.aston.hw2.entity.Book;
-import ru.aston.hw2.entity.Genre;
-import ru.aston.hw2.utils.DatabaseConnection;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import ru.aston.hw4.entity.Author;
+import ru.aston.hw4.entity.Book;
+import ru.aston.hw4.entity.Genre;
+import ru.aston.hw4.utils.DatabaseConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -11,6 +13,10 @@ import java.util.List;
 import java.util.Optional;
 
 public class BookDao implements Dao<Book> {
+
+    private Session currentSession;
+    private Transaction currentTransaction;
+
     @Override
     public Optional<Book> get(long bookId) {
         String query = "SELECT b.id, b.name, b.year, g.id AS genre_id, g.name AS genre_name, a.id AS author_id, a.name AS author_name " +

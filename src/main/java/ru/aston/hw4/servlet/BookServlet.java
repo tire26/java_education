@@ -1,9 +1,9 @@
-package ru.aston.hw2.servlet;
+package ru.aston.hw4.servlet;
 
 import com.google.gson.Gson;
-import ru.aston.hw2.entity.Book;
-import ru.aston.hw2.entity.Genre;
-import ru.aston.hw2.service.BookService;
+import ru.aston.hw4.entity.Book;
+import ru.aston.hw4.entity.Genre;
+import ru.aston.hw4.service.BookService;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;

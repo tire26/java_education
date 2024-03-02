@@ -1,4 +1,4 @@
-package ru.aston.hw2.utils;
+package ru.aston.hw4.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
