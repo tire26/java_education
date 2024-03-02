@@ -2,11 +2,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.aston</groupId>
-    <artifactId>java_education</artifactId>
+    <artifactId>java_web</artifactId>
+    <packaging>war</packaging>
     <version>1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
-
-    <name>java_education</name>
+    <name>java_web Maven Webapp</name>
     <url>https://maven.apache.org</url>
 
     <properties>
@@ -16,12 +15,6 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>3.8.1</version>
-            <scope>test</scope>
-        </dependency>
 
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -47,17 +40,8 @@
             <artifactId>postgresql</artifactId>
             <version>42.7.0</version>
         </dependency>
-
     </dependencies>
-
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>3.3.1</version>
-            </plugin>
-        </plugins>
-        <finalName>java_education</finalName>
+        <finalName>java_web</finalName>
     </build>
 </project>
