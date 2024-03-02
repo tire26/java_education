@@ -1,4 +1,4 @@
-package ru.aston;
+package ru.aston.hw1;
 
 import java.util.Collection;
 import java.util.Comparator;

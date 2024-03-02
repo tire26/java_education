@@ -1,4 +1,4 @@
-package ru.aston;
+package ru.aston.hw1;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -49,7 +49,7 @@ public class CustomArrayImpl<T> implements CustomArray<T>, RandomAccess, Cloneab
 
     @Override
     public void add(int index, T element) {
-        checkIndex(index);
+        checkIndexForAdd(index);
         if (index == currentElementsCount) {
             addElementInTheEnd(element);
         } else {
@@ -141,11 +141,6 @@ public class CustomArrayImpl<T> implements CustomArray<T>, RandomAccess, Cloneab
         }
     }
 
-    private void checkIndex(int index) {
-        if (index > currentElementsCount || index < 0)
-            throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
-    }
-
     private int partition(T[] arr, int low, int high, Comparator<? super T> comparator) {
         int middle = low + (high - low) / 2;
         T pivot = arr[middle];
@@ -159,6 +154,16 @@ public class CustomArrayImpl<T> implements CustomArray<T>, RandomAccess, Cloneab
         }
         swap(arr, i + 1, high);
         return i + 1;
+    }
+
+    private void checkIndex(int index) {
+        if (index >= currentElementsCount || index < 0)
+            throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
+    }
+
+    private void checkIndexForAdd(int index) {
+        if (index > currentElementsCount || index < 0)
+            throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
     }
 
     private void swap(T[] arr, int i, int j) {
