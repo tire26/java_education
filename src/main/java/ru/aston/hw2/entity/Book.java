@@ -1,10 +1,7 @@
 package ru.aston.hw2.entity;
 
-import lombok.Builder;
 import lombok.Getter;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
