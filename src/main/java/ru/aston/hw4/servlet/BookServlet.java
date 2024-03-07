@@ -5,7 +5,6 @@ import com.google.gson.Gson;
 import ru.aston.hw4.dto.BookCreationDto;
 import ru.aston.hw4.dto.BookCreationWithIdDto;
 import ru.aston.hw4.dto.BookResponseDto;
-import ru.aston.hw4.dto.GenreDto;
 import ru.aston.hw4.service.BookService;
 
 import javax.servlet.annotation.WebServlet;

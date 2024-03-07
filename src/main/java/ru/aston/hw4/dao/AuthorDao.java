@@ -3,7 +3,6 @@ package ru.aston.hw4.dao;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import ru.aston.hw4.entity.Article;
 import ru.aston.hw4.entity.Author;
 import ru.aston.hw4.entity.Book;
 import ru.aston.hw4.entity.IntellectualWork;

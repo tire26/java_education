@@ -5,7 +5,6 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import ru.aston.hw4.entity.Author;
 import ru.aston.hw4.entity.Genre;
 import ru.aston.hw4.utils.HibernateSessionFactoryUtil;
 

@@ -1,5 +1,6 @@
 package ru.aston.hw4.factory;
 
+import lombok.Getter;
 import ru.aston.hw4.dao.AuthorDao;
 import ru.aston.hw4.dao.BookDao;
 import ru.aston.hw4.dao.Dao;
@@ -8,6 +9,7 @@ import ru.aston.hw4.entity.Author;
 import ru.aston.hw4.entity.Book;
 import ru.aston.hw4.entity.Genre;
 
+@Getter
 public class DaoFactory {
     private static final DaoFactory INSTANCE = new DaoFactory();
 
@@ -22,15 +24,4 @@ public class DaoFactory {
         return INSTANCE;
     }
 
-    public Dao<Book> getBookDao() {
-        return bookDao;
-    }
-
-    public Dao<Author> getAuthorDao() {
-        return authorDao;
-    }
-
-    public Dao<Genre> getGenreDao() {
-        return genreDao;
-    }
 }
