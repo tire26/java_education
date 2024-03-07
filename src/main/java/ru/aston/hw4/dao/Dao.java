@@ -14,5 +14,5 @@ public interface Dao<T extends Id> {
 
     void update(T t);
 
-    void delete(T t);
+    void delete(long t);
 }

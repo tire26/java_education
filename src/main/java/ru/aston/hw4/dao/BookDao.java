@@ -1,139 +1,152 @@
 package ru.aston.hw4.dao;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Root;
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import ru.aston.hw4.entity.Author;
 import ru.aston.hw4.entity.Book;
 import ru.aston.hw4.entity.Genre;
-import ru.aston.hw4.utils.DatabaseConnection;
+import ru.aston.hw4.utils.HibernateSessionFactoryUtil;
 
-import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class BookDao implements Dao<Book> {
 
-    private Session currentSession;
-    private Transaction currentTransaction;
-
     @Override
     public Optional<Book> get(long bookId) {
-        String query = "SELECT b.id, b.name, b.year, g.id AS genre_id, g.name AS genre_name, a.id AS author_id, a.name AS author_name " +
-                "FROM books b " +
-                "JOIN genres g ON b.genre_id = g.id " +
-                "JOIN authors_books ab ON b.id = ab.id_book " +
-                "JOIN authors a ON ab.id_author = a.id " +
-                "WHERE b.id = ?";
-
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setLong(1, bookId);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    Book book = bookFromResultSet(resultSet);
-                    return Optional.of(book);
-                } else {
-                    return Optional.empty();
-                }
+        Transaction transaction = null;
+        Book book = null;
+        try (Session session = HibernateSessionFactoryUtil.getSessionFactory().getCurrentSession()) {
+            transaction = session.beginTransaction();
+            book = session.get(Book.class, bookId);
+            List<Author> authors = book.getAuthors();
+            Genre genre = book.getGenre();
+            transaction.commit();
+        } catch (HibernateException e) {
+            if (transaction != null) {
+                transaction.rollback();
             }
-        } catch (SQLException e) {
             e.printStackTrace();
         }
-        return Optional.empty();
+        return Optional.ofNullable(book);
+    }
+
+    public List<Book> getBooksByAuthor(Author author) {
+        Transaction transaction = null;
+        List<Book> books = new ArrayList<>();
+        try (Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+            CriteriaQuery<Book> criteriaQuery = criteriaBuilder.createQuery(Book.class);
+            Root<Book> bookRoot = criteriaQuery.from(Book.class);
+            Join<Book, Author> authorJoin = bookRoot.join("authors");
+            criteriaQuery.where(criteriaBuilder.equal(authorJoin.get("id"), author.getId()));
+            books = session.createQuery(criteriaQuery).getResultList();
+            transaction.commit();
+        } catch (HibernateException e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+        }
+        return books;
     }
 
     @Override
     public List<Book> getAll() {
-        String query = "SELECT b.id, b.name, b.year, g.id AS genre_id, g.name AS genre_name, a.id AS author_id, a.name AS author_name " +
-                "FROM books b " +
-                "JOIN genres g ON b.genre_id = g.id " +
-                "JOIN authors_books ab ON b.id = ab.id_book " +
-                "JOIN authors a ON ab.id_author = a.id ";
-
-        try (Connection connection = DatabaseConnection.getConnection();
-             Statement statement = connection.prepareStatement(query)) {
-
-            try (ResultSet resultSet = statement.executeQuery(query)) {
-                List<Book> resultList = new ArrayList<>();
-                while (resultSet.next()) {
-                    Book book = bookFromResultSet(resultSet);
-                    resultList.add(book);
-                }
-                return resultList;
+        Transaction transaction = null;
+        List<Book> books = new ArrayList<>();
+        try (Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            books = session.createQuery("SELECT b " +
+                            "FROM Book b " +
+                            "JOIN FETCH b.genre " +
+                            "JOIN FETCH b.authors ", Book.class)
+                    .getResultList();
+            transaction.commit();
+        } catch (HibernateException e) {
+            if (transaction != null) {
+                transaction.rollback();
             }
-        } catch (SQLException e) {
             e.printStackTrace();
         }
-        return new ArrayList<>();
-    }
-
-    private Book bookFromResultSet(ResultSet resultSet) throws SQLException {
-        int id = resultSet.getInt("id");
-        String name = resultSet.getString("name");
-        Integer year = resultSet.getInt("year");
-
-        int genreId = resultSet.getInt("genre_id");
-        String genreName = resultSet.getString("genre_name");
-        Genre genre = new Genre(genreId, genreName);
-
-        List<Author> authors = new ArrayList<>();
-        int author_id;
-        String author_name;
-        do {
-            author_id = resultSet.getInt("author_id");
-            author_name = resultSet.getString("author_name");
-            authors.add(new Author(author_id, author_name));
-        } while (resultSet.next());
-
-        Book book = new Book(id, name, year, genre);
-        book.addAll(authors);
-        return book;
+        return books;
     }
 
     @Override
     public void save(Book book) {
-        String query = "INSERT INTO books(id, name, genre_id, year)" +
-                " VALUES (?, ?, ?, ?)";
-
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setInt(1, book.getId());
-            statement.setString(2, book.getName());
-            statement.setInt(3, book.getGenre().getId());
-            statement.setInt(4, book.getYear());
-            int ignored = statement.executeUpdate();
-        } catch (SQLException e) {
+        Transaction transaction = null;
+        try (Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            Queue<Author> authors = new ConcurrentLinkedQueue<>(book.getAuthors());
+            for (Author author : authors) {
+                session.refresh(author);
+                author.addWork(book);
+            }
+            session.persist(book);
+            transaction.commit();
+        } catch (HibernateException e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
             e.printStackTrace();
         }
     }
 
     @Override
     public void update(Book book) {
-        String query = "UPDATE books SET name = ? AND year = ? AND genre_id = ? WHERE id = ?";
-
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setInt(4, book.getId());
-            statement.setString(1, book.getName());
-            statement.setInt(3, book.getGenre().getId());
-            statement.setInt(2, book.getYear());
-            int ignored = statement.executeUpdate();
-        } catch (SQLException e) {
+        Transaction transaction = null;
+        try (Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            Book currentBook = session.get(Book.class, book.getId());
+            Queue<Author> dbAuthors = new ConcurrentLinkedQueue<>(currentBook.getAuthors());
+            Queue<Author> authors = new ConcurrentLinkedQueue<>(book.getAuthors());
+            for (Author author : dbAuthors) {
+                if (!book.getAuthors().contains(author)) {
+                    author.removeWork(book);
+                }
+            }
+            for (Author author : authors) {
+                session.refresh(author);
+                author.addWork(book);
+            }
+            session.merge(book);
+            transaction.commit();
+        } catch (HibernateException e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
             e.printStackTrace();
         }
     }
 
     @Override
-    public void delete(Book book) {
-        String query = "DELETE FROM aston_demo.public.books WHERE id = ?";
-
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setInt(1, book.getId());
-            int ignored = statement.executeUpdate();
-        } catch (SQLException e) {
+    public void delete(long id) {
+        Transaction transaction = null;
+        try (Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            Book book = session.find(Book.class, id);
+            if (book != null) {
+                Queue<Author> authors = new ConcurrentLinkedQueue<>(book.getAuthors());
+                for (Author author : authors) {
+                    session.refresh(author);
+                    author.removeWork(book);
+                }
+                session.remove(book);
+            }
+            transaction.commit();
+        } catch (HibernateException e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
             e.printStackTrace();
         }
     }

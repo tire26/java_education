@@ -1,18 +1,23 @@
 package ru.aston.hw4.entity;
 
 import jakarta.persistence.*;
+import jakarta.persistence.Id;
+import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Scanner;
 
 @Getter
 @Entity
+@Setter
 @Table
-public class Genre implements Id {
+public class Genre implements ru.aston.hw4.entity.Id {
 
-    @jakarta.persistence.Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
@@ -24,6 +29,14 @@ public class Genre implements Id {
             orphanRemoval = true
     )
     private List<Book> books = new ArrayList<>();
+
+    public Genre(Integer id, String name) {
+        this.setId(id);
+        this.name = name;
+    }
+
+    public Genre() {
+    }
 
     public void addBook(Book b) {
         books.add(b);
@@ -40,11 +53,11 @@ public class Genre implements Id {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Genre genre = (Genre) o;
-        return Objects.equals(id, genre.id);
+        return Objects.equals(getId(), genre.getId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash(getId());
     }
 }
